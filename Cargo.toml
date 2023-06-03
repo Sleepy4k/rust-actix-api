@@ -1,14 +1,22 @@
 [package]
-name = "actix"
+name = "actix_api"
 version = "1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-cors = "0.6.4"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+serde_json = "1.0"
+serde = "1.0"
+reqwest = { version = "0.11", features = ["cookies", "json", "stream"]}
 actix-web = "4.2.1"
-chrono = { version = "0.4.23", features = ["serde"] }
+actix-cors = "0.6.2"
+chrono = { version = "0.4.22", features = ["serde"] }
+dotenv = "0.15.0"
+sqlx = { version = "0.6.2", features = [ "runtime-actix-rustls", "postgres", "chrono" ] }
+uuid = {version = "1.1.2",  features = ["v4"]}
 env_logger = "0.10.0"
-serde = { version = "1.0.152", features = ["derive"] }
-uuid = { version = "1.2.2", features = ["v4"] }
+lazy_static = "1.4"
+async_once = "0.2.6"
