@@ -1,15 +1,15 @@
-use crate::response::GenericResponse;
-use actix_web::{route, HttpResponse, Responder};
+use std::env;
+use actix_web::Responder;
 
-#[route("", method = "GET", method = "POST", method = "PUT", method = "DELETE")]
-async fn get_welcome() -> impl Responder {
-    const MESSAGE: &str = "Welcome to the API";
+use crate::helpers::response::*;
 
-    let response_json = &GenericResponse {
-        status: "OK".to_string(),
-        message: MESSAGE.to_string(),
-        data: "".to_string(),
-    };
+#[doc = "Welcome route"]
+pub async fn welcome() -> impl Responder {
+    let app_name = format!("welcome to {} API", env::var("APP_NAME").unwrap_or("actix-api".to_string()));
 
-    HttpResponse::Ok().json(response_json)
+    response_json(
+        "success".to_string(),
+        app_name,
+        vec![]
+    )
 }
