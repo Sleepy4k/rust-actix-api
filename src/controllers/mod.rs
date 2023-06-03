@@ -1,5 +1,5 @@
-pub mod todo;
+pub mod product;
 pub mod welcome;
 
-pub use todo::*;
+pub use product::*;
 pub use welcome::*;
