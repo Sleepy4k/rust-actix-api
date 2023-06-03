@@ -1,37 +1,55 @@
+use std::env;
+use dotenv::dotenv;
 use actix_cors::Cors;
-use actix_web::middleware::Logger;
-use actix_web::{http::header, web, App, HttpServer};
+use actix_web::{error, http::header, web::JsonConfig, App, HttpResponse, HttpServer, middleware::Logger};
 
-use actix::{model::AppState, routes};
+use actix_api::*;
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "actix_web=info");
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    dotenv().ok();
+
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG", "actix_api=debug,actix_web=info");
     }
 
     env_logger::init();
 
-    let todo_db = AppState::init();
-    let app_data = web::Data::new(todo_db);
+    let port = env::var("APP_PORT")
+        .expect("no environment variable set for \"ENV STATUS\"")
+        .parse::<u16>()
+        .unwrap_or(8080);
 
-    println!("Starting server at: http://localhost:7004");
+    println!("Server running on port {}", port);
 
-    HttpServer::new(move || {
+    let _server = HttpServer::new(|| {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:3000")
-            .allowed_origin("http://localhost:3000/")
+            .allow_any_origin()
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
-            .allowed_headers(vec![header::AUTHORIZATION, header::CONTENT_TYPE, header::ACCEPT])
-            .supports_credentials();
+            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+            .allowed_header(header::CONTENT_TYPE)
+            .supports_credentials()
+            .max_age(3600);
+
+        let json_config = JsonConfig::default()
+            .limit(104857600)
+            .error_handler(|err, _req| {
+                error::InternalError::from_response(
+                    err,
+                    HttpResponse::Conflict().finish(),
+                )
+                .into()
+            });
 
         App::new()
-            .app_data(app_data.clone())
-            .configure(routes::config)
             .wrap(cors)
             .wrap(Logger::default())
+            .app_data(json_config)
+            .configure(routes::config)
     })
-    .bind(("localhost", 7004))?
+    .bind(("0.0.0.0", port))?
     .run()
-    .await
+    .await;
+
+    Ok(())
 }

@@ -1,17 +1,17 @@
-use actix_web::web;
-use crate::{get_welcome, get_todo, create_todo, find_todo, update_todo, delete_todo};
+use actix_web::web::{self};
+
+use crate::controllers::*;
 
 pub fn config(conf: &mut web::ServiceConfig) {
-    let scope = web::scope("/api")
-        // Welcome routes
-        .service(get_welcome)
+    conf
+        // welcome route
+        .route("/", web::route().to(welcome))
 
-        // Todo routes
-        .service(get_todo)
-        .service(create_todo)
-        .service(find_todo)
-        .service(update_todo)
-        .service(delete_todo);
-
-    conf.service(scope);
+        // product route
+        .route("/product", web::get().to(get_product))
+        .route("/product", web::post().to(add_product))
+        .route("/product/{id}", web::get().to(find_product))
+        .route("/product/{id}", web::put().to(update_product))
+        .route("/product/{id}", web::delete().to(delete_product))
+    ;
 }

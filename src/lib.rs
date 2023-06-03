@@ -1,9 +1,9 @@
-pub mod model;
 pub mod routes;
 pub mod helpers;
+pub mod structs;
 pub mod controllers;
 
-pub use model::*;
 pub use routes::*;
 pub use helpers::*;
+pub use structs::*;
 pub use controllers::*;
