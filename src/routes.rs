@@ -13,5 +13,8 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .route("/product/{id}", web::get().to(find_product))
         .route("/product/{id}", web::put().to(update_product))
         .route("/product/{id}", web::delete().to(delete_product))
+
+        // missing route
+        .default_service(web::route().to(fallback))
     ;
 }

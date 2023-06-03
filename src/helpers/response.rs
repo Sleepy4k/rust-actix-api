@@ -26,6 +26,8 @@ pub fn response_json(status: String, message: String, data: Vec<Value>) -> HttpR
         code = StatusCode::UNAUTHORIZED;
     } else if stats == "forbidden" {
         code = StatusCode::FORBIDDEN;
+    } else if stats == "not found" {
+        code = StatusCode::NOT_FOUND;
     }
 
     // set response body
