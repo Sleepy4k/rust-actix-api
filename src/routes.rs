@@ -7,6 +7,11 @@ pub fn config(conf: &mut web::ServiceConfig) {
         // welcome route
         .route("/", web::route().to(welcome))
 
+        // auth route
+        .route("/login", web::post().to(login))
+        .route("/register", web::post().to(register))
+        .route("/logout", web::post().to(logout))
+
         // product route
         .route("/product", web::get().to(get_product))
         .route("/product", web::post().to(add_product))
