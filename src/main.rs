@@ -20,7 +20,12 @@ async fn main() -> anyhow::Result<()> {
         .parse::<u16>()
         .unwrap_or(8080);
 
-    println!("Server running on port {}", port);
+    let hostname = env::var("APP_HOST")
+        .expect("no environment variable set for \"ENV STATUS\"")
+        .parse::<String>()
+        .unwrap_or("localhost".to_string());
+
+    println!("Server running on {}:{}", hostname, port);
 
     let _server = HttpServer::new(|| {
         let cors = Cors::default()
@@ -47,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
             .app_data(json_config)
             .configure(routes::config)
     })
-    .bind(("0.0.0.0", port))?
+    .bind((hostname, port))?
     .run()
     .await;
 
