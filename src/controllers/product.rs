@@ -1,7 +1,7 @@
 use serde_json::Value;
 use actix_web::{web::{self}, Responder};
 
-use crate::{helpers::{response::*, database::connect_postgres, parse::*}, structs::product::*};
+use crate::{helpers::{response::*, database::connect_postgres, parse::*, validation::*}, structs::product::*};
 
 #[doc = "Get all products"]
 pub async fn get_product() -> impl Responder {
@@ -25,6 +25,14 @@ pub async fn add_product(body: web::Json<Value>) -> impl Responder {
     let name = to_str(map_get("name", body.to_owned()));
     let price = to_i32(map_get("price", body.to_owned()));
     let amount = to_i32(map_get("amount", body.to_owned()));
+
+    if check_if_empty(name.to_owned()) {
+        return response_json(
+            "failed".to_string(),
+            "Please fill all fields".to_string(),
+            vec![]
+        )
+    }
 
     let pool = connect_postgres().await;
     let data = sqlx::query_as!(ProductStruct, "insert into product (name, price, amount) values ($1, $2, $3) returning *", name, price, amount)
@@ -51,7 +59,16 @@ pub async fn find_product(arg: web::Path<i32>) -> impl Responder {
         .await
         .unwrap();
 
+
     let result = convert_vec_to_values(data);
+
+    if check_if_empty(result.to_owned()) {
+        return response_json(
+            "failed".to_string(),
+            "Product not found".to_string(),
+            vec![]
+        )
+    }
 
     response_json(
         "success".to_string(),
@@ -75,6 +92,14 @@ pub async fn update_product(body: web::Json<Value>, arg: web::Path<i32>) -> impl
 
     let result = convert_vec_to_values(data);
 
+    if check_if_empty(result.to_owned()) {
+        return response_json(
+            "failed".to_string(),
+            "Product not found".to_string(),
+            vec![]
+        )
+    }
+
     response_json(
         "success".to_string(),
         "Successfully updated product".to_string(),
@@ -93,6 +118,14 @@ pub async fn delete_product(arg: web::Path<i32>) -> impl Responder {
         .unwrap();
 
     let result = convert_vec_to_values(data);
+
+    if check_if_empty(result.to_owned()) {
+        return response_json(
+            "failed".to_string(),
+            "Product not found".to_string(),
+            vec![]
+        )
+    }
 
     response_json(
         "success".to_string(),
