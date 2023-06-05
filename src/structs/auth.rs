@@ -1,7 +1,7 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 #[doc = "Token struct"]
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TokenStruct {
     pub id: i32,
     pub role: String,
