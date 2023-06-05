@@ -1,7 +1,7 @@
 use std::env;
 use dotenv::dotenv;
 use actix_cors::Cors;
-use actix_web::{error, http::header, web::JsonConfig, App, HttpResponse, HttpServer, middleware::Logger};
+use actix_web::{error, http::header, web::JsonConfig, App, HttpResponse, HttpServer, middleware::{Logger, DefaultHeaders}};
 
 use actix_api::*;
 
@@ -13,7 +13,7 @@ async fn main() -> anyhow::Result<()> {
         env::set_var("RUST_LOG", "actix_api=debug,actix_web=info");
     }
 
-    env_logger::init();
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
     let port = env::var("APP_PORT")
         .expect("no environment variable set for \"ENV STATUS\"")
@@ -25,9 +25,9 @@ async fn main() -> anyhow::Result<()> {
         .parse::<String>()
         .unwrap_or("localhost".to_string());
 
-    println!("Server running on {}:{}", hostname, port);
+    let server_url = format!("{}:{}", hostname, port);
 
-    let _server = HttpServer::new(|| {
+    let server = HttpServer::new(|| {
         let cors = Cors::default()
             .allow_any_origin()
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
@@ -49,12 +49,17 @@ async fn main() -> anyhow::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(Logger::default())
+            .wrap(DefaultHeaders::new().add(("Service-Version", "1.0.0")))
+            .wrap(cookie::CheckCookie)
             .app_data(json_config)
             .configure(routes::config)
     })
-    .bind((hostname, port))?
-    .run()
-    .await;
+    .bind(server_url.to_owned())?
+    .run();
+    
+    println!("Server running at http://{}/", server_url);
+
+    server.await?;
 
     Ok(())
 }
