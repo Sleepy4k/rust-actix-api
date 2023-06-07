@@ -26,6 +26,9 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .route("/spare_part/{id}", web::put().to(update_spare_part))
         .route("/spare_part/{id}", web::delete().to(delete_spare_part))
 
+        // user route
+        .route("/user", web::get().to(get_user))
+
         // missing route
         .default_service(web::route().to(fallback))
     ;
