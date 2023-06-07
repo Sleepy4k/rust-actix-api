@@ -41,7 +41,6 @@ where
 
     fn call(&self, request: ServiceRequest) -> Self::Future {
         let path = request.path().to_string();
-        let token: Option<actix_web::cookie::Cookie> = request.cookie("auth_jwt_secret");
 
         if path == "/" || path == "/login" || path == "/register" {
             let res = self.service.call(request);
@@ -51,7 +50,9 @@ where
             });
         }
 
-        let jwt_secret = env::var("JWT_SECRET").unwrap_or_else(|_| String::from("secret"));
+        let jwt_title = env::var("JWT_TOKEN_TITLE").unwrap_or_else(|_| String::from("auth_jwt_secret"));
+        let jwt_secret = env::var("JWT_TOKEN_SECRET").unwrap_or_else(|_| String::from("secret"));
+        let token: Option<actix_web::cookie::Cookie> = request.cookie(&jwt_title);
         let validation = Validation::default();
 
         match token {
