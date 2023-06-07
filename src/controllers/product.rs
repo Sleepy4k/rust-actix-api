@@ -35,6 +35,25 @@ pub async fn add_product(body: web::Json<Value>) -> impl Responder {
     }
 
     let pool = connect_postgres().await;
+
+    match sqlx::query!("select * from product where name = $1 limit 1", name.clone())
+        .fetch_optional(&pool)
+        .await {
+            Ok(Some(_)) => {
+                return response_json(
+                    "failed".to_string(),
+                    "Product already exists".to_string(),
+                    vec![]
+                )
+            }
+            Ok(None) => (),
+            Err(_) => return response_json(
+                "error".to_string(),
+                "Something went wrong".to_string(),
+                vec![]
+            )
+        };
+
     let data = sqlx::query_as!(ProductStruct, "insert into product (name, price, amount) values ($1, $2, $3) returning *", name, price, amount)
         .fetch_all(&pool)
         .await

@@ -69,8 +69,9 @@ pub async fn login(body: web::Json<Value>) -> impl Responder {
         iat: token_time,
         exp: token_time.saturating_add(60 * 60 * 24 * 7),
     };
-    
-    let jwt_secret = env::var("JWT_SECRET").unwrap_or_else(|_| String::from("secret"));
+
+    let jwt_title = env::var("JWT_TOKEN_TITLE").unwrap_or_else(|_| String::from("auth_jwt_secret"));
+    let jwt_secret = env::var("JWT_TOKEN_SECRET").unwrap_or_else(|_| String::from("secret"));
     let key = EncodingKey::from_secret(jwt_secret.as_ref());
     let token = encode(&Header::default(), &token_value, &key).unwrap_or_else(|_| String::new());
 
@@ -92,7 +93,7 @@ pub async fn login(body: web::Json<Value>) -> impl Responder {
         "Successfully logged in".to_string(),
         detail_user,
         "set".to_string(),
-        "auth_jwt_secret".to_string(),
+        jwt_title,
         token,
     )
 }

@@ -34,6 +34,25 @@ pub async fn add_spare_part(body: web::Json<Value>) -> impl Responder {
     }
 
     let pool = connect_postgres().await;
+
+    match sqlx::query!("select * from spare_part where name = $1 limit 1", name.clone())
+        .fetch_optional(&pool)
+        .await {
+            Ok(Some(_)) => {
+                return response_json(
+                    "failed".to_string(),
+                    "Spare part already exists".to_string(),
+                    vec![]
+                )
+            }
+            Ok(None) => (),
+            Err(_) => return response_json(
+                "error".to_string(),
+                "Something went wrong".to_string(),
+                vec![]
+            )
+        };
+
     let data = sqlx::query_as!(SparePartStruct, "insert into spare_part (name, price) values ($1, $2) returning *", name, price)
         .fetch_all(&pool)
         .await
