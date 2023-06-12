@@ -4,6 +4,7 @@ use actix_cors::Cors;
 use actix_web::{error, http::header, web::JsonConfig, App, HttpResponse, HttpServer, middleware::{Logger, DefaultHeaders}};
 
 use actix_api::*;
+extern crate argon2;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

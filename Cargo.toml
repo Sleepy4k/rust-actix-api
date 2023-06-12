@@ -20,5 +20,5 @@ lazy_static = "1.4"
 async_once = "0.2.6"
 chrono = { version = "0.4.22", features = ["serde"] }
 jsonwebtoken = "8.3.0"
-bcrypt = "0.14.0"
+rust-argon2 = "1.0"
 futures-util = { version = "0.3.17", default-features = false, features = ["std"] }

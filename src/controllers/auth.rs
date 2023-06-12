@@ -1,11 +1,10 @@
 use chrono::Local;
 use serde_json::Value;
 use actix_web::{web::{self}, Responder};
-use bcrypt::{hash, verify, DEFAULT_COST};
 use std::{env, time::{SystemTime, UNIX_EPOCH}};
 use jsonwebtoken::{encode, Header, EncodingKey};
 
-use crate::{helpers::{response::*, database::connect_postgres, parse::*, validation::*}, structs::auth::*};
+use crate::{helpers::{response::*, database::connect_postgres, parse::*, validation::*, auth::*}, structs::auth::*};
 
 #[doc = "Verify user credentials and return token"]
 pub async fn login(body: web::Json<Value>) -> impl Responder {
@@ -41,21 +40,13 @@ pub async fn login(body: web::Json<Value>) -> impl Responder {
             )
         };
 
-    match verify(password, &user.password) {
-        Ok(true) => (),
-        Ok(false) => {
-            return response_json(
-                "failed".to_string(),
-                "Username or password is wrong".to_string(),
-                vec![]
-            )
-        }
-        Err(_) => return response_json(
-            "error".to_string(),
-            "Something went wrong".to_string(),
+    if !verify_password(password.as_str(), &user.password) {
+        return response_json(
+            "failed".to_string(),
+            "Username or password is wrong".to_string(),
             vec![]
         )
-    };
+    }
 
     let token_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -134,7 +125,7 @@ pub async fn register(body: web::Json<Value>) -> impl Responder {
             )
         };
 
-    let hashed_password = hash(password, DEFAULT_COST).unwrap_or_else(|_| String::new());
+    let hashed_password = hash_password(password.as_str());
 
     match sqlx::query_as!(DetailUserStruct,
         "insert into client (username, password, role) values ($1, $2, $3) returning id, username, role",
