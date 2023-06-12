@@ -4,17 +4,17 @@ use crate::{helpers::{response::*, database::connect_postgres, parse::*}, struct
 
 #[doc = "Get all users"]
 pub async fn get_user() -> impl Responder {
-    let pool = connect_postgres().await;
-    let data = sqlx::query_as!(DetailUserStruct, "select id, username, role from client")
-        .fetch_all(&pool)
-        .await
-        .unwrap();
+  let pool = connect_postgres().await;
+  let data = sqlx::query_as!(DetailUserStruct, "select id, username, role from client")
+    .fetch_all(&pool)
+    .await
+    .unwrap();
 
-    let result = convert_vec_to_values(data);
+  let result = convert_vec_to_values(data);
 
-    response_json(
-        "success".to_string(),
-        "Successfully retrieved user".to_string(),
-        result
-    )
+  response_json(
+    "success".to_string(),
+    "Successfully retrieved user".to_string(),
+    result
+  )
 }
